@@ -1,0 +1,373 @@
+---
+title: "Google Data Analytics Capstone Project - Bike Share"
+author: "Joshua Kitt"
+date: "2024-04-03"
+output: html_document
+---
+
+[Linkedin](https://www.linkedin.com/in/joshua-kitt/)  
+[Github](https://github.com/JoshuaKitt)  
+[Kaggle](https://www.kaggle.com/joshuakitt)  
+
+![Cyclistic2](https://miro.medium.com/v2/resize:fit:720/format:webp/1*lDj-caBuuHvTv-DBzxRFoA.png){width=15%}
+
+[Source](https://miro.medium.com/v2/resize:fit:720/format:webp/1*lDj-caBuuHvTv-DBzxRFoA.png)
+
+This project is part of the Google Data Analytics course through Coursera. In this project a data set is supplied for information about a bike share company over a 12 month period and the data analysis process of (**Ask, Prepare, Process, Analyse, Share, Act**) will be implemented to deliver this project. The project is aimed to showcase the knowledge and skills gain in this course.
+
+
+### 1. Ask (Background)
+
+I am a junior data analyst working for Cyclistic which is a bike share company in Chicago. The company currently has more than 5,800 bicycles and 600 docking stations. These bikes can we collected from one station and dropped off at any other docking station. The company offers it members a single-pass ride, full day pass and an annual membership.
+
+The marketing director has announced their strategy for building awareness and promoting the annual membership as till will help the company grow and generate additional revenue.
+
+The data analytics team has been tasked with this project and have will have to investigate the below.
+
+1. **How the annual members and casual (single & daily pass) members use the bike share differently.**
+2. Under which conditions would a casual member switch to annual membership.
+3. How can Cyclistic use digital media to influence casual riders to opt for the annual membership. 
+
+**I have been assigned to the first task of finding the difference between the casual and annual members. I understand within the data, there will emerge trends and insights that will assist the marketing team in converting casual members to sign up for the annual membership**
+
+The key stake holders for this projects are:
+
+- **Lily Moreno**: The director of marketing and your manager. Moreno is responsible for the development of campaigns and initiatives to promote the bike-share program. These may include email, social media, and other channels.
+
+- **Cyclistic marketing analytics team**: A team of data analysts who are responsible for collecting, analyzing, and reporting data that helps guide Cyclistic marketing strategy. You joined this team six months ago and have been busy learning about Cyclistic’s mission and business goals—as well as how you, as a junior data analyst, can help Cyclistic achieve them.
+
+- **Cyclistic executive team**: The notoriously detail-oriented executive team will decide
+whether to approve the recommended marketing program.
+
+### 2. Prepare (Data Collection)
+
+The data team have collected and stored the historic data [here](https://divvy-tripdata.s3.amazonaws.com/index.html). The data used for the analysis is saved on an AWS server and is downloaded and unzipped. The data used for the analysis is for the year 2023.
+
+
+The data has been made available for our analysis through Motivate International Inc. under this [license](https://divvybikes.com/data-license-agreement). This data is complete, unbiased and reliable and will be used for the analysis.
+
+Before importing the files to R. Below packages are installed and loaded into R to facilitate the analysis.
+
+
+```{r}
+## Install and load packages for cleaning
+
+chooseCRANmirror(ind = 1) 
+
+install.packages("tidyverse")
+install.packages("janitor")
+install.packages("lubridate")
+install.packages("skimr")
+install.packages("dplyr")
+install.packages("ggplot2")
+
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(skimr)
+library(dplyr)
+library(ggplot2)
+
+```
+ 
+Working directory on my computer was updated and all the files were transferred to this directory. 
+
+
+```{r}
+# Set directory
+
+getwd()
+setwd("D:/Personal Documents/Data Analytics/Case Study 1/4. Analysis/3.1 R Markdown")
+```
+Below the files for each month of the year 2023 have  been imported into R using `read.csv()` . The files for all 12 months are then compared using the `compare_df_cols()` function to confirm the datatype for all the dataframes are the same.
+
+```{r}
+# Import csv files into R
+
+t1 <- read.csv("202301-divvy-tripdata.csv")
+t2 <- read.csv("202302-divvy-tripdata.csv")
+t3 <- read.csv("202303-divvy-tripdata.csv")
+t4 <- read.csv("202304-divvy-tripdata.csv")
+t5 <- read.csv("202305-divvy-tripdata.csv")
+t6 <- read.csv("202306-divvy-tripdata.csv")
+t7 <- read.csv("202307-divvy-tripdata.csv")
+t8 <- read.csv("202308-divvy-tripdata.csv")
+t9 <- read.csv("202309-divvy-tripdata.csv")
+t10 <- read.csv("202310-divvy-tripdata.csv")
+t11 <- read.csv("202311-divvy-tripdata.csv")
+t12 <- read.csv("202312-divvy-tripdata.csv")
+
+# Compare all column have same no. of columns and data type
+compare_df_cols(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12)
+
+```
+Once confirmed that the datatypes are the same, `r_bind()` was used to merge the 12 files into a master file.
+
+```{r}
+# Combine all files 
+master <- rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12)
+```
+
+To familiarize myself with the dataframe, below functions were used to view and explore the columns and rows.
+
+```{r}
+# view dataset
+head(master)
+glimpse(master)
+dim(master)
+
+```
+
+
+### 3. Process (Data cleaning/manipulation)
+
+R program was used due to the sheer volume of data. R was also used due to its visulization capabilities.
+
+A seperate dataframe was created called "clean_data" from the master file for redundancy and allowing experimentation with different code.
+
+The datatype for the start time and end time for the rented cycle was changed from "chr" to "POSIXct" using `as.POSIXct()`. Once done, the `str()` function was used to confirm the change had occured.
+
+```{r}
+# Convert character datatype to datetime format
+clean_data <- master
+clean_data$started_at <- as.POSIXct(clean_data$started_at, format = "%Y-%m-%d %H:%S:%S")
+
+clean_data$ended_at <- as.POSIXct(clean_data$ended_at, format = "%Y-%m-%d %H:%S:%S")
+
+# View the datetype is converted 
+str(clean_data)
+
+```
+
+
+To further analyse the data, a few new columns were added to measure the average trip duration and to create separate columns for the hour, month, day and date. These columns were created to further analyse the difference between casual and annual members. A pipe operator was used to consolidate the code and perform these functions together.
+
+The function `mutate()` was used to create new columns and added to the clean_data dateframe.
+
+
+```{r}
+# Create columns for trip duration, hour, month and day 
+
+clean_data <- clean_data %>% 
+  mutate(trip_duration = difftime(clean_data$ended_at,clean_data$started_at, "min")) %>% 
+  mutate(trip_duration_min = as.numeric(trip_duration)/60) %>% 
+  mutate(hour = format(started_at, format = "%H")) %>% 
+  mutate(month = month(started_at, label = TRUE)) %>%  
+  mutate(day = weekdays(started_at)) %>% 
+  mutate(date = as_date(started_at))
+
+  view(clean_data)
+```
+
+After confirming that the required columns have been added. The dataframe was skimmed through. During this process there were some trip duration that were negative or had a trip time of 0. An assumption was made that these were accidental rentals or bugs in the system. A filter was added to eliminate all trips below 0 seconds using `filter()`
+
+Next, some of the rows were blank/null values. In a normal situation, further information would be requested to fill in the gaps. For this project the rows were deleted used the `drop_na()` function.
+```{r}
+# Filter out rows less than 0
+
+clean_data <- clean_data %>% 
+  filter(trip_duration > 0) %>%
+# Delete rows with empty cells 
+   drop_na()
+```
+
+Below columns were checked to find unique values using `unique()` that will be used during the visualization.
+
+Duplicate rows were checked using the ride_id column and the `duplicated()` function.
+
+```{r}
+# Check for Unique values for rideable type and membership
+unique(clean_data$rideable_type)
+unique(clean_data$member_casual)
+
+# Check for duplicate entries in ride_id
+sum(duplicated(clean_data$ride_id))
+
+view(clean_data)
+```
+
+This completes the cleaning and data manipulation process. The clean data is saved as a new dataframe that will be used for visualization as "citybikes"
+
+# 4. Analyse (& Visualize)
+
+```{r}
+citybikes <- clean_data
+```
+
+Initially we will try to find the usage between the casual and annual members. We have created a bar graph which show the number of users and a table. Table is color coordinated with the type of membership.
+
+```{r}
+# Total Usage - Casual vs Members
+
+total_usage_df <- citybikes %>% 
+  group_by(member_casual) %>% 
+  summarize(n=n()) %>% 
+  mutate(percentage = n*100/sum(n)) %>% 
+  print()
+
+
+ggplot(citybikes, aes (x= member_casual, fill=member_casual)) + 
+  geom_bar() + 
+  labs( title = "Number of Casual Riders Vs Members", x = "User Type", y = "Number of Members") + scale_fill_discrete( name = "Member Type", labels = c("Casual", "Member")) 
+
+```
+
+The plot clearly indicates there are more members than casual users. The table indicates there are 2.1M annual compared to the 1.3M casual for the year 2023.
+
+Next analyses is to view the average ride time of the casual vs annual member. Bar graph is created for different member type and average trip duration in minutes.
+```{r}
+# Average trip duration - Casual vs Members
+
+avg_trip_df <- citybikes %>% 
+  group_by(member_casual) %>% 
+  summarise(avg_trip = mean(trip_duration_min)) %>% 
+  print()
+
+ggplot(avg_trip_df, aes (x= member_casual, y= avg_trip, fill = member_casual)) + 
+  geom_col() +
+  labs( title = "Average Trip Duration", x = "Member Type", y = "Average ride duration") + scale_fill_discrete( name = "Member Type", labels = c("Casual", "Member")) 
+
+```
+
+From the graph and table, the casual member rides the bike on average of 32 minutes compared to the annual that rides it for 20 minutes.
+
+Below code is written to review the monthly usage for casual and annual members. Bar graphs is created for each month and the member type is shown as per the legend color.
+```{r}
+# Monthly Usage - Casual vs Members
+
+monthly_usage_df <- citybikes %>% 
+  group_by(month, member_casual) %>% 
+  summarise(n=n()) %>% 
+  arrange(month) %>% 
+  print
+
+ggplot(citybikes, aes (x= month, fill=member_casual)) + 
+  geom_bar(position = "dodge") + 
+  labs( title = "Usuage by month", x = "Months", y = "Number of rides",) + 
+  scale_fill_discrete( name = "Member Type", labels = c("Casual", "Member")) 
+```
+
+From the graph, both groups of riders increase in the warmer months between May to September and reduce in the colder months. This information can be useful to setup marketing campaigns during months where users are at its peak.
+
+Below code is used to create a bar graph that indicate which bike type members prefer.
+```{r}
+#Usage by bike type 
+
+bike_usage_df <- citybikes %>% 
+  group_by (rideable_type, member_casual) %>% 
+  summarise(n=n()) %>% 
+  mutate(percentage = n*100/sum(n)) %>% 
+  print()
+
+ggplot(citybikes, aes(x=rideable_type, fill = member_casual)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Usage by bike type", x = "Bike type", y = "Number of Users")+
+  scale_fill_discrete( name = "Member Type", labels = c("Casual", "Member")) 
+```
+
+From the graph it is noted that the docked bike is the least used. This bike type will require further investigation. The bike could potentially be removed if it is not generating revenue for Cyclistic. On the other hand electric and classic bikes are almost equally preferred.
+
+Below graph indicated usage by month for the two members.
+
+```{r}
+# Average trip duration by month & members
+citybikes %>%
+  group_by(month, member_casual) %>%
+  summarise(mean_trip_duration = mean(trip_duration)) %>%
+  ggplot(aes(x = month, y = mean_trip_duration, fill = member_casual)) + 
+  geom_col(position = "dodge") + 
+  labs(title = "Average Duration", x = "Months", y = "Average Trip Duration (s)") + 
+  scale_fill_discrete( name = "Member Type", labels = c("Casual", "Member"))
+```
+
+The same result as previously seen, the duration of rides increase in the warmer months for both member groups.
+
+The below graph is created to understand when the members use the cycle throughout the day. The graph is created using a bar graph and a line graph.
+```{r}
+# Usage by hour
+
+usage_hour_df <- citybikes %>% 
+  group_by(hour, member_casual) %>% 
+  summarise(n=n()) %>% 
+  print()
+
+ggplot(citybikes, aes( x=hour , fill = member_casual)) + 
+  geom_bar(position = "dodge") +
+  labs( title = "Usage by hour", x= "Start hour", y = "Number of rides") +
+  scale_fill_discrete(name = "Member type", labels = c("Casual", "Member"))
+
+# Usage by hour (line graph)
+ggplot(citybikes, aes(x = hour, color = member_casual, group = member_casual)) + 
+  geom_line(stat = "count") +
+  labs(title = "Usage by hour", x = "Start hour", y = "Number of rides") +
+  scale_color_discrete(name = "Member type", labels = c("Casual", "Member"))
+
+```
+
+The members use the bike in the morning between 7am-9am and in the evening between 4pm-6pm. This can be assumed that this group of people are working a day job.
+The casual members gradually increase throughout the day and peak at 5pm. These users could be university students, tourists and other urban commuters.
+
+The final plot shows us the differnce in the usage by day for both member groups.
+```{r}
+# Usage by Day
+
+usage_hour_df <- citybikes %>% 
+  group_by(day, member_casual) %>% 
+  summarise(n=n()) %>% 
+  print()
+
+ggplot(citybikes, aes( x=day , fill = member_casual)) + 
+  geom_bar(position = "dodge") +
+  labs( title = "Usage by hour", x= "Start hour", y = "Number of rides") +
+  scale_fill_discrete(name = "Member type", labels = c("Casual", "Member"))
+```
+
+Members appear to be pretty consistent throughout the week with a slight dip on Sunday. On the other hand, casual member usage peak on the weekend.
+
+The top 5 most popular stations used by annual and casual members.
+```{r}
+# Most frequent start stations for each member type
+top_start_station <- citybikes %>% 
+  count(start_station_name, member_casual) %>%
+  group_by(member_casual) %>% 
+  top_n(5,n)
+
+print(top_start_station)
+
+# Most frequent end stations for each member type
+  top_end_station <- clean_data %>% 
+    count(end_station_name, member_casual) %>%
+    group_by(member_casual) %>%
+    top_n(5, n)
+  
+  print(top_end_station)
+  
+```
+The most popular start stations used by casuals are
+- "DuSable Lake Shore Dr & Monroe St
+- "Michigan Ave & Oak St" 
+- "Millennium Park" 
+- "Streeter Dr & Grand Ave"
+- "DuSable Lake Shore Dr & North Blvd"
+
+## 5. Share (Results - Observations and Trends)
+
+Below is a summary of the trends from the analysis.
+
+- Casual riders prefer to ride over the weekend and reach peak usage later in the day between 2pm-6pm.
+
+- Casual member usage increases over the span of the day and peaks at 5pm. This indicates that it will most likely be students, tourists and other urban commuters using this service. 
+
+- Highest volume of usage appears to be towards the coastal area near the Navy Pier.
+
+
+## 6. Act (Recommendations)
+
+The recommendations from our team to the marketing department to increase the number of annual members from the casual member pool are as follows:
+
+- Promotion and advertising of cyclistic bikes should be targetted on the weekends in the afternoon and into the evening. The bike promoted should be either the electric or classic cycle. 
+
+- Marketing campaigns should focus on advertising to students either at campuses or student accommodation. Social media could also be used for this age group. 
+
+- Marketing campaigns should be targeted around the stations that have the highest traffic to increase visibility. These stations are towards the coast such as station Streeter Dr & Grand Ave.
+
