@@ -16,7 +16,7 @@ output: html_document
 This project is part of the Google Data Analytics course through Coursera. In this project a data set is supplied for information about a bike share company over a 12 month period and the data analysis process of (**Ask, Prepare, Process, Analyse, Share, Act**) will be implemented to deliver this project. The project is aimed to showcase the knowledge and skills gain in this course.
 
 
-### 1. Ask (Background)
+# 1. Ask (Background)
 
 I am a junior data analyst working for Cyclistic which is a bike share company in Chicago. The company currently has more than 5,800 bicycles and 600 docking stations. These bikes can we collected from one station and dropped off at any other docking station. The company offers it members a single-pass ride, full day pass and an annual membership.
 
@@ -39,7 +39,7 @@ The key stake holders for this projects are:
 - **Cyclistic executive team**: The notoriously detail-oriented executive team will decide
 whether to approve the recommended marketing program.
 
-### 2. Prepare (Data Collection)
+# 2. Prepare (Data Collection)
 
 The data team have collected and stored the historic data [here](https://divvy-tripdata.s3.amazonaws.com/index.html). The data used for the analysis is saved on an AWS server and is downloaded and unzipped. The data used for the analysis is for the year 2023.
 
@@ -119,7 +119,7 @@ dim(master)
 ```
 
 
-### 3. Process (Data cleaning/manipulation)
+# 3. Process (Data cleaning/manipulation)
 
 R program was used due to the sheer volume of data. R was also used due to its visulization capabilities.
 
@@ -350,7 +350,7 @@ The most popular start stations used by casuals are
 - "Streeter Dr & Grand Ave"
 - "DuSable Lake Shore Dr & North Blvd"
 
-## 5. Share (Results - Observations and Trends)
+# 5. Share (Results - Observations and Trends)
 
 Below is a summary of the trends from the analysis.
 
@@ -361,7 +361,7 @@ Below is a summary of the trends from the analysis.
 - Highest volume of usage appears to be towards the coastal area near the Navy Pier.
 
 
-## 6. Act (Recommendations)
+# 6. Act (Recommendations)
 
 The recommendations from our team to the marketing department to increase the number of annual members from the casual member pool are as follows:
 
